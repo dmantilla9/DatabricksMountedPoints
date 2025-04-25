@@ -19,22 +19,22 @@ Este projecto solo pretende mostrar de una manera clara como realizar un Mounted
 
 ## Tooling
 
-### Databricks <img src="https://ui-assets.cloud.databricks.com/static/media/databricks-text-dark-mode.2cbffc111b6c414acdb710ca52abbad7.svg" title="Databricks" alt="Databricks" width="40" height="40"/>
+### Databricks <img src="https://www.svgrepo.com/show/330261/databricks.svg" title="Databricks" alt="Databricks" width="40" height="40"/>
 
-We take advantage of the free MongoDB cluster for this project.
-
+We take advantage of the Databricks for this project.
+Cluster Specifications
 * **Databricks Runtime Version:** 15.4 LTS (includes Apache Spark 3.5.0, Scala 2.12)
 * **Node Type:** Standard_D3_v2 14GB Memory, 4cores
 * **Access mode:** No isolation shared
 
-### Azure <img src="https://github.com/devicons/devicon/blob/master/icons/azure/azure-original.svg" title="Azure" alt="Azure" width="40" height="40"/>
+### Azure <img src="https://www.svgrepo.com/show/473715/microsoftazure.svg" title="Azure" alt="Azure" width="40" height="40"/>
 
 * **Azure AD**  Active Directory for Service Principal 
 * **Storage accounts** Manage File input / output
 * **Hosted Databricks** Databricks Workspace / Scope Secret / Databricks CLI (On Premises)
-* **KeyVault** Gestion des secrets in KeyVault
+* **KeyVault** Manage of secrets in KeyVault
 
-> [!CAUTION]
+> [!TIP]
 > You can install Databricks CLI On Premises to create connections and secretScopes
 
 ### **Steps and instructions** 
@@ -45,32 +45,44 @@ We take advantage of the free MongoDB cluster for this project.
 *	**Create SP and Create Secret**
 
 2. Storage Account
-*	Access Control
-*	Check Access to Service Principal 
-*	Add Grant access to this resource (Storage Blob Data Contributor)
+*	**Create a Storage Account and Container**
+* **Verify the Access Control service principal **
+*	**Check Access to Service Principal or...** 
+*	**Add Grant access to this resource** ** (Storage Blob Data Contributor)*
 
 3. Configuration Databricks CLI
-*	databricks configure --token
+* **Create Azure Databricks Services** 
+* **Install Databricks CLI** [Dabricks CLI](https://docs.databricks.com/aws/en/dev-tools/cli/install)
+*	**Configure databricks** **--token*
 *	https://...
-*	Create a PAT ( Personal Access Token ) into workspace Databricks
-After =>databricks secrets list-scopes -- after
-*	Create a SecretScope (recommended in Premium workspaces Databricks) 
-*	Principal page workspace add #secrets/createScope to add secretScope (KeyVault URI + resource ID[KeyVault]) for all resources
+*	**Create a PAT** ( Personal Access Token ) into workspace Databricks
+* **RUN databricks** **secrets list-scopes* to list all secrets ("Keyvault" databricks) 
+*	**Create a SecretScope** (recommended in Premium workspaces Databricks) 
+*	**Create Scope** **Principal page workspace add #secrets/createScope to add secretScope (KeyVault URI + resource ID[KeyVault]) for all resources*
 
 ## **Configuration**: 
-
-`configs = {"fs.azure.account.auth.type": "OAuth",
+```
+configs = {"fs.azure.account.auth.type": "OAuth",
           "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-          "fs.azure.account.oauth2.client.id": "<APPLICATION_CLIENT_ID_IN_SERVICEPRINCIPAL>",
-          "fs.azure.account.oauth2.client.secret": dbutils.secrets.get(scope="<SECRETSCOPE_NAME>",key="<SECRETNAME_IN_KEYVAULT>"),
-          "fs.azure.account.oauth2.client.endpoint": "https://login.microsoftonline.com/<DIRECTORY_TENANT_ID_IN_SERVICEPRINCIPAL>/oauth2/token"}
+          "fs.azure.account.oauth2.client.id": "${{ vars.APPLICATION_CLIENT_ID_IN_SERVICEPRINCIPAL }}",
+          "fs.azure.account.oauth2.client.secret": dbutils.secrets.get(scope="${{ vars.SECRETSCOPE_NAME }}",key="${{ vars.SECRETNAME_IN_KEYVAULT }}"),
+          "fs.azure.account.oauth2.client.endpoint": "https://login.microsoftonline.com/${{ vars.DIRECTORY_TENANT_ID_IN_SERVICEPRINCIPAL }}/oauth2/token"}
 
 ### Optionally, you can add <directory-name> to the source URI of your mount point.
 dbutils.fs.mount(
-  source = "abfss://<CONTAINER_NAME>@<STORAGE_ACCOUNT_NAME>.dfs.core.windows.net/",
+  source = "abfss://${{ vars.CONTAINER_NAME }}@${{ vars.STORAGE_ACCOUNT_NAME }}.dfs.core.windows.net/",
   mount_point = "/mnt/<mnt_name>",
-  extra_configs = configs)`
-
+  extra_configs = configs)
+```
+> Finally try the mntPoint with
+```
+%fs ls /mnt
+```
+> Unmounted Point 
+* **for unmount point use:*
+```
+dbutils.fs.unmount("/mnt/<mount-name>")
+```
 
 ## License
 [MIT License](LICENSE)
