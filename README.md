@@ -79,7 +79,7 @@ dbutils.fs.mount(
 %fs ls /mnt
 ```
 > Unmounted Point 
-* **for unmount point use:*
+* *for unmount point use:*
 ```
 dbutils.fs.unmount("/mnt/<mount-name>")
 ```
